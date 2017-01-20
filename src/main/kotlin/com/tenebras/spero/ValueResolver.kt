@@ -17,8 +17,8 @@ import kotlin.reflect.jvm.javaType
 import kotlin.reflect.primaryConstructor
 
 open class ValueResolver {
-    val resolvers = mutableMapOf<String, (ResultSet, String)->Any>()
-    val fallbackResolver = {rs: ResultSet, name: String, type: KType ->
+    val resolvers = mutableMapOf<String, (ResultSet, String) -> Any>()
+    val fallbackResolver = { rs: ResultSet, name: String, type: KType ->
 
         val typeName = type.javaType.typeName
 
@@ -52,7 +52,7 @@ open class ValueResolver {
         register(Timestamp::class, ResultSet::getTimestamp)
     }
 
-    fun register (type: KClass<*>, resolver: (ResultSet, String)->Any): ValueResolver {
+    fun register(type: KClass<*>, resolver: (ResultSet, String) -> Any): ValueResolver {
         resolvers.put(type.qualifiedName!!, resolver)
         return this
     }
@@ -64,10 +64,11 @@ open class ValueResolver {
     fun resolve(rs: ResultSet, type: KType, name: String): Any {
         if (resolvers.contains(type.toString())) {
             return resolvers[type.toString()]!!.invoke(rs, name)
-        } else{
+        } else {
             try {
                 return fallbackResolver.invoke(rs, name, type)
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+            }
         }
 
         throw Exception("No resolver for type $type")

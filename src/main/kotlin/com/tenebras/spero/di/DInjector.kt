@@ -11,9 +11,9 @@ class Creator {
     val typeMap = mutableMapOf<String, Resolver<Any>>()
 
     @Suppress("UNCHECKED_CAST")
-    fun <T: Any> create(typeName: String): T {
+    fun <T : Any> create(typeName: String): T {
 
-        if(canCreate(typeName)) {
+        if (canCreate(typeName)) {
             println("Can create $typeName")
         } else {
             println("Can't create $typeName !!!")
@@ -35,13 +35,13 @@ class Creator {
 
     fun canCreate(typeName: String): Boolean {
 
-        if(typeName.startsWith("kotlin.")) {
+        if (typeName.startsWith("kotlin.")) {
             return false
         }
 
-        if(typeMap.containsKey(typeName)) {
+        if (typeMap.containsKey(typeName)) {
             typeMap[typeName]!!.getDependencies().forEach {
-                if(!canCreate(it.typeName) && !it.isOptional) {
+                if (!canCreate(it.typeName) && !it.isOptional) {
                     println("Can't create dependency of $typeName. Dependency is $it")
                     return false
                 }
@@ -52,7 +52,7 @@ class Creator {
                 // Auto find class with it's constructor
                 val constructor = Class.forName(typeName).kotlin.primaryConstructor
 
-                if(constructor == null) {
+                if (constructor == null) {
                     println("Can't find primary constructor for $typeName")
                     return false
                 }
@@ -78,12 +78,12 @@ interface Resolver<T> {
     fun get(creator: Creator): T
 }
 
-class Instance<T>(private val instance: T): Resolver<T> {
+class Instance<T>(private val instance: T) : Resolver<T> {
     override fun getDependencies(): List<Dependency> = emptyList()
     override fun get(creator: Creator): T = instance
 }
 
-class Constructor<T>(val function: KFunction<T>): Resolver<T> {
+class Constructor<T>(val function: KFunction<T>) : Resolver<T> {
     val dependsOn = mutableListOf<Dependency>()
 
     init {
@@ -101,9 +101,9 @@ class Constructor<T>(val function: KFunction<T>): Resolver<T> {
         val params = hashMapOf<KParameter, Any?>()
 
         getDependencies().forEach {
-            if(creator.canCreate(it.typeName)) {
+            if (creator.canCreate(it.typeName)) {
                 params.put(it.param, creator.create(it.typeName))
-            } else if(!it.isOptional){
+            } else if (!it.isOptional) {
                 throw IllegalStateException("Can't prepare params for ${function.returnType}. Dependency is ${it.typeName}")
             }
         }
@@ -112,31 +112,33 @@ class Constructor<T>(val function: KFunction<T>): Resolver<T> {
     }
 }
 
-class DInjector(x: DInjector.()->Any?) {
+class DInjector(x: DInjector.() -> Any?) {
 
     val creator = Creator()
 
-    init { x() }
+    init {
+        x()
+    }
 
-    fun append(initializer: DInjector.()->Any?) {
+    fun append(initializer: DInjector.() -> Any?) {
         initializer()
     }
 
-    infix fun <T: Any> KClass<T>.with(constructor: KFunction<T>) {
+    infix fun <T : Any> KClass<T>.with(constructor: KFunction<T>) {
         creator.register(qualifiedName!!, Constructor(constructor))
     }
 
-    infix fun <T: Any> KClass<T>.with(instance: ()->T) {
+    infix fun <T : Any> KClass<T>.with(instance: () -> T) {
         creator.register(qualifiedName!!, Instance(instance.invoke()))
     }
 
-    inline fun <reified T: Any> instance(): T {
+    inline fun <reified T : Any> instance(): T {
         val typeName = (object : TypeReference<T>() {}).type.typeName
 
         return creator.create(typeName)
     }
 
-    inline fun <reified T: Any> instance(typeName: String): T {
+    inline fun <reified T : Any> instance(typeName: String): T {
         return creator.create(typeName)
     }
 }

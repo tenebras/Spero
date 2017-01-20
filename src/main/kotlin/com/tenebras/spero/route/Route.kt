@@ -7,8 +7,8 @@ class Route(val methods: List<String>, url: String, val action: KFunction<Any>) 
     val pattern: String
     var params: MutableMap<String, RouteParam> = mutableMapOf()
     var paramIndexMap: MutableMap<Int, String> = mutableMapOf()
-    val after: MutableList<()->Any> = mutableListOf()
-    val before: MutableList<()->Any> = mutableListOf()
+    val after: MutableList<() -> Any> = mutableListOf()
+    val before: MutableList<() -> Any> = mutableListOf()
 
     companion object {
         fun fromString(uri: String, x: KFunction<Any>): Route {
@@ -50,11 +50,11 @@ class Route(val methods: List<String>, url: String, val action: KFunction<Any>) 
                     val regexp = it.value.substring(splitterPosition + 1, it.value.length - 1)
 
                     paramIndexMap.put(params.size, name)
-                    params.put(name, RouteParam(name, "", {Regex(regexp).matches(it)}))
+                    params.put(name, RouteParam(name, "", { Regex(regexp).matches(it) }))
                     pattern = pattern.replaceFirst(it.value, "($regexp)")
 
                 } else {
-                    name = it.value.substring(1, it.value.length-1)
+                    name = it.value.substring(1, it.value.length - 1)
                     paramIndexMap.put(params.size, name)
                     params.put(name, RouteParam(name, "", { Regex(".+").matches(it) }))
                     pattern = pattern.replaceFirst(it.value, "(.+)")
@@ -91,14 +91,14 @@ class Route(val methods: List<String>, url: String, val action: KFunction<Any>) 
             throw ArrayIndexOutOfBoundsException("No param by index $idx")
         }
 
-        return params[ paramIndexMap[idx] ]!!
+        return params[paramIndexMap[idx]]!!
     }
 
     fun hasMethod(method: String): Boolean {
         return methods.isEmpty() || methods.contains(method.toUpperCase())
     }
 
-    fun convert(param: String, x: (value: String)-> Any): Route {
+    fun convert(param: String, x: (value: String) -> Any): Route {
         return this
     }
 
@@ -107,12 +107,12 @@ class Route(val methods: List<String>, url: String, val action: KFunction<Any>) 
         return this
     }
 
-    fun after(x: ()->Any): Route {
+    fun after(x: () -> Any): Route {
         after.add(x)
         return this
     }
 
-    fun before(x: ()->Any): Route {
+    fun before(x: () -> Any): Route {
         before.add(x)
         return this
     }

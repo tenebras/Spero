@@ -8,7 +8,7 @@ open class DbConnectionManager(val connectionString: String) {
     var connection: Connection? = null
 
     fun connection(): Connection {
-        if(connection == null || connection!!.isClosed) {
+        if (connection == null || connection!!.isClosed) {
             connection = DriverManager.getConnection(connectionString)
         }
 

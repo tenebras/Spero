@@ -10,20 +10,20 @@ import kotlin.reflect.KType
 import kotlin.reflect.jvm.javaType
 import kotlin.system.measureTimeMillis
 
-class HttpHandler(val routes: Routes, var injector: DInjector): AbstractHandler() {
+class HttpHandler(val routes: Routes, var injector: DInjector) : AbstractHandler() {
     val resourceHandlers = ArrayList<ResourceHandler>()
 
     override fun handle(target: String?, baseRequest: org.eclipse.jetty.server.Request?, request: HttpServletRequest?, response: HttpServletResponse?) {
 
-        if(response != null && request != null) {
+        if (response != null && request != null) {
             println(request.queryString)
             println(request.requestURI)
             println(request.requestURL)
             response.contentType = "text/html;charset=utf-8"
             response.status = HttpServletResponse.SC_OK
 
-            try{
-                 val execution = measureTimeMillis {
+            try {
+                val execution = measureTimeMillis {
                     val route = routes.find(request.method, request.requestURI)
                     val params: Array<Any> = Array(route.action.parameters.size, {})
 
@@ -58,7 +58,7 @@ class HttpHandler(val routes: Routes, var injector: DInjector): AbstractHandler(
                 }
 
                 response.writer?.println("Execution: $execution")
-            }   catch (e: Exception) {
+            } catch (e: Exception) {
                 println("Exception: ${e.message}")
                 for (resourceHandler in resourceHandlers) {
                     resourceHandler.handle(target, baseRequest, request, response)
@@ -68,7 +68,7 @@ class HttpHandler(val routes: Routes, var injector: DInjector): AbstractHandler(
                     }
                 }
 
-                if(!baseRequest!!.isHandled) {
+                if (!baseRequest!!.isHandled) {
                     println("ERROR: Can't handle request ${request.queryString}")
                 }
             }

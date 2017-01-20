@@ -10,7 +10,7 @@ open class SperoApp(beforeStart: SperoApp.() -> Any) {
     var port: Int = 8080
     val routes: Routes = Routes()
     val httpHandler: HttpHandler by lazy { HttpHandler(routes, injector) }
-    var injectorRules: DInjector.()->Any? = {}
+    var injectorRules: DInjector.() -> Any? = {}
     val injector: DInjector by lazy {
         DInjector(injectorRules)
     }
@@ -20,17 +20,17 @@ open class SperoApp(beforeStart: SperoApp.() -> Any) {
         beforeStart()
 
         injector.append {
-            SperoApp::class with {app}
+            SperoApp::class with { app }
         }
 
         start()
     }
 
-    fun injection(x: DInjector.()->Any?) {
+    fun injection(x: DInjector.() -> Any?) {
         injectorRules = x
     }
 
-    fun init(h: ()->Any): SperoApp {
+    fun init(h: () -> Any): SperoApp {
         h.invoke()
         return this
     }

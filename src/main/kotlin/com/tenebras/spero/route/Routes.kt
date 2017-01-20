@@ -2,7 +2,8 @@ package com.tenebras.spero.route
 
 import kotlin.reflect.KFunction
 
-class Routes  {//(initializer: Routes.()->Route = {})
+class Routes {
+    //(initializer: Routes.()->Route = {})
     val routes: MutableList<Route> = mutableListOf()
     // init { add(initializer) }
 
@@ -48,14 +49,14 @@ class Routes  {//(initializer: Routes.()->Route = {})
     }
 
     fun add(route: Route) = routes.add(route)
-    fun add(initializer: Routes.()->Any) = initializer.invoke(this)
+    fun add(initializer: Routes.() -> Any) = initializer.invoke(this)
 
     fun isEmpty(): Boolean = routes.size == 0
 
     fun find(method: String, uri: String): Route {
 
-        for(route in routes) {
-            if(route.isSatisfied(method, uri)) {
+        for (route in routes) {
+            if (route.isSatisfied(method, uri)) {
                 return route
             }
         }

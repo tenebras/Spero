@@ -22,9 +22,9 @@ open class Repository<out T>(
 
         var placeholders: String = "?"
 
-        if(param is List<*>) {
-            param.forEach {nextStatementProperties.add(it)}
-            placeholders = Array(param.size, {'?'}).joinToString(", ")
+        if (param is List<*>) {
+            param.forEach { nextStatementProperties.add(it) }
+            placeholders = Array(param.size, { '?' }).joinToString(", ")
         } else {
             nextStatementProperties.add(param)
         }
@@ -35,7 +35,7 @@ open class Repository<out T>(
     fun String.queryFor(): ResultSet {
         val stmt = connectionManager.connection().prepareStatement(this)
 
-        nextStatementProperties.forEachIndexed { i, value -> stmt.setObject(i+1, value) }
+        nextStatementProperties.forEachIndexed { i, value -> stmt.setObject(i + 1, value) }
         nextStatementProperties.clear()
 
         return stmt.executeQuery()
@@ -44,7 +44,7 @@ open class Repository<out T>(
     fun String.execute(): Boolean {
         val stmt = connectionManager.connection().prepareStatement(this)
 
-        nextStatementProperties.forEachIndexed { i, value -> stmt.setObject(i+1, value) }
+        nextStatementProperties.forEachIndexed { i, value -> stmt.setObject(i + 1, value) }
         nextStatementProperties.clear()
 
         return stmt.execute()
@@ -58,10 +58,10 @@ open class Repository<out T>(
         val stmt: PreparedStatement
         val regexp = Regex(":([\\w]+)")
 
-        if(param is List<*>) {
-            val placeholder = if(param is List<*>) Array(param.size, {'?'}).joinToString(", ") else "?"
+        if (param is List<*>) {
+            val placeholder = if (param is List<*>) Array(param.size, { '?' }).joinToString(", ") else "?"
             stmt = connectionManager.connection().prepareStatement(replace(regexp, placeholder))
-            param.forEachIndexed { i, value -> stmt.setObject(i+1, value)}
+            param.forEachIndexed { i, value -> stmt.setObject(i + 1, value) }
         } else {
             stmt = connectionManager.connection().prepareStatement(replace(regexp, "?"))
             stmt.setObject(1, param)
@@ -75,10 +75,10 @@ open class Repository<out T>(
         val lists = mutableListOf<String>()
         var sql = this
 
-        for((key, value) in params) {
+        for ((key, value) in params) {
             if (value is List<*>) {
                 lists.add(key)
-                sql = sql.replace(":$key", Array( value.size, {'?'} ).joinToString(", "))
+                sql = sql.replace(":$key", Array(value.size, { '?' }).joinToString(", "))
             }
         }
 
@@ -90,7 +90,7 @@ open class Repository<out T>(
             val name = it.groupValues[1]
 
             if (lists.contains(name)) {
-                (params[name] as List<*>).forEach {stmt.setObject(i++, it)}
+                (params[name] as List<*>).forEach { stmt.setObject(i++, it) }
             } else {
                 stmt.setObject(i++, params[name])
             }

@@ -1,4 +1,3 @@
-
 import com.tenebras.spero.DbConnectionManager
 import com.tenebras.spero.Repository
 import com.tenebras.spero.SperoApp
@@ -35,7 +34,7 @@ fun main(args: Array<String>) {
 }
 
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
-annotation class ConfigValue(val name : String)
+annotation class ConfigValue(val name: String)
 
 
 open class ProfileRepository(connectionManager: DbConnectionManager) : Repository<Profile>(::Profile, connectionManager)
@@ -43,7 +42,7 @@ class Rep(connectionManager: DbConnectionManager) : ProfileRepository(connection
 
 class ConnectionManager(connectionString: String = "jdbc:postgresql://localhost/money") : DbConnectionManager(connectionString)
 
-class Profile(var id: String, var email:String, var password: String, var createdAt: ZonedDateTime, var lastLoginAt: ZonedDateTime)
+class Profile(var id: String, var email: String, var password: String, var createdAt: ZonedDateTime, var lastLoginAt: ZonedDateTime)
 class ProfileTransformer(val profile: Profile)
 
 
