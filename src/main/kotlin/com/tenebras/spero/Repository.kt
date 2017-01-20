@@ -13,8 +13,42 @@ open class Repository<out T>(
 ) {
 
     var tableName = factory.returnType.javaType.simpleDispString.toLowerCase()
+    val nextStatementProperties = mutableListOf<Any?>()
 
-    fun all() = "select * from $tableName".prepare().entities()
+    fun all() = "select * from $tableName".queryFor().entities()
+
+
+    fun bind(param: Any): String {
+
+        var placeholders: String = "?"
+
+        if(param is List<*>) {
+            param.forEach {nextStatementProperties.add(it)}
+            placeholders = Array(param.size, {'?'}).joinToString(", ")
+        } else {
+            nextStatementProperties.add(param)
+        }
+
+        return placeholders
+    }
+
+    fun String.queryFor(): ResultSet {
+        val stmt = connectionManager.connection().prepareStatement(this)
+
+        nextStatementProperties.forEachIndexed { i, value -> stmt.setObject(i+1, value) }
+        nextStatementProperties.clear()
+
+        return stmt.executeQuery()
+    }
+
+    fun String.execute(): Boolean {
+        val stmt = connectionManager.connection().prepareStatement(this)
+
+        nextStatementProperties.forEachIndexed { i, value -> stmt.setObject(i+1, value) }
+        nextStatementProperties.clear()
+
+        return stmt.execute()
+    }
 
 
     fun String.prepare(): PreparedStatement = connectionManager.connection().prepareStatement(this)
@@ -82,12 +116,12 @@ open class Repository<out T>(
         return factory.call(*params.toTypedArray())
     }
 
+    inline fun <reified T> ResultSet.singleValue(): T {
+        next()
+        return getObject(1) as T
+    }
+
     fun PreparedStatement.entities(): List<T> = executeQuery().entities()
     fun PreparedStatement.entity(): T = executeQuery().entity()
-    inline fun <reified T> PreparedStatement.value(): T {
-        val rs = executeQuery()
-        rs.next()
-
-        return rs.getObject(1) as T
-    }
+    inline fun <reified T> PreparedStatement.singleValue(): T = executeQuery().singleValue()
 }

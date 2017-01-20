@@ -1,6 +1,5 @@
 package com.tenebras.spero.route
 
-import com.github.salomonbrys.kodein.Kodein
 import com.tenebras.spero.di.DInjector
 import org.eclipse.jetty.server.handler.AbstractHandler
 import org.eclipse.jetty.server.handler.ResourceHandler
@@ -9,7 +8,7 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.reflect.KType
 import kotlin.reflect.jvm.javaType
-import kotlin.reflect.primaryConstructor
+import kotlin.system.measureTimeMillis
 
 class HttpHandler(val routes: Routes, var injector: DInjector): AbstractHandler() {
     val resourceHandlers = ArrayList<ResourceHandler>()
@@ -24,38 +23,41 @@ class HttpHandler(val routes: Routes, var injector: DInjector): AbstractHandler(
             response.status = HttpServletResponse.SC_OK
 
             try{
-                val route = routes.find(request.method, request.requestURI)
-                val params: Array<Any> = Array(route.action.parameters.size, {})
+                 val execution = measureTimeMillis {
+                    val route = routes.find(request.method, request.requestURI)
+                    val params: Array<Any> = Array(route.action.parameters.size, {})
 
-                route.action.parameters.forEachIndexed({
-                    idx, param ->
+                    route.action.parameters.forEachIndexed({
+                        idx, param ->
 
-                    if (!param.type.toString().startsWith("kotlin.")) {
-                        params[idx] = resolveType(param.type)
-                    } else {
-                        try {
-                            val value = if(route.params.containsKey(param.name))
-                                route.params[param.name]!!.value else route.paramByIdx(idx-1).value
+                        if (!param.type.toString().startsWith("kotlin.")) {
+                            params[idx] = resolveType(param.type)
+                        } else {
+                            try {
+                                val value = if (route.params.containsKey(param.name))
+                                    route.params[param.name]!!.value else route.paramByIdx(idx - 1).value
 
-                            when (param.type.toString()) {
-                                "kotlin.String"  -> params[idx] = value
-                                "kotlin.Int"     -> params[idx] = value.toInt()
-                                "kotlin.Long"    -> params[idx] = value.toLong()
-                                "kotlin.Float"   -> params[idx] = value.toFloat()
-                                "kotlin.Double"  -> params[idx] = value.toDouble()
-                                "kotlin.Boolean" -> params[idx] = value.toBoolean()
-                                else -> {
-                                    params[idx] = value
+                                when (param.type.toString()) {
+                                    "kotlin.String" -> params[idx] = value
+                                    "kotlin.Int" -> params[idx] = value.toInt()
+                                    "kotlin.Long" -> params[idx] = value.toLong()
+                                    "kotlin.Float" -> params[idx] = value.toFloat()
+                                    "kotlin.Double" -> params[idx] = value.toDouble()
+                                    "kotlin.Boolean" -> params[idx] = value.toBoolean()
+                                    else -> {
+                                        params[idx] = value
+                                    }
                                 }
+                            } catch (e: ArrayIndexOutOfBoundsException) {
+                                // if(param.isOptional) {}
+                                throw e
                             }
-                        } catch (e: ArrayIndexOutOfBoundsException) {
-                            // if(param.isOptional) {}
-                            throw e
                         }
-                    }
-                })
+                    })
+                    response.writer?.println(route.action.call(*params))
+                }
 
-                response.writer?.println(route.action.call(*params))
+                response.writer?.println("Execution: $execution")
             }   catch (e: Exception) {
                 println("Exception: ${e.message}")
                 for (resourceHandler in resourceHandlers) {
