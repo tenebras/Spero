@@ -1,0 +1,43 @@
+group 'com.tenebras'
+version '0.2'
+
+buildscript {
+    ext.kotlin_version = '1.0.6'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: "kotlin-allopen"
+apply plugin: 'maven'
+
+sourceCompatibility = 1.5
+
+allOpen {
+    annotation("com.your.Annotation")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    //compile "org.reflections:reflections:0.9.10"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    compile "com.github.salomonbrys.kodein:kodein:3.1.0"
+    compile "com.google.code.gson:gson:2.7"
+    compile "org.eclipse.jetty:jetty-server:9.3.13.v20161014"
+    compile "org.postgresql:postgresql:9.4.1211"
+    compile "com.google.inject:guice:4.1.0"
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
